@@ -1,0 +1,32 @@
+name: Deploy Auth Service
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to OCIR
+        run: |
+          echo "${{ secrets.OCIR_AUTH_TOKEN }}" | docker login \
+            -u "${{ secrets.OCIR_USERNAME }}" \
+            --password-stdin ap-chuncheon-1.ocir.io
+
+      - name: Build Docker image
+        run: |
+          docker build -t auth-service .
+
+      - name: Tag for OCIR
+        run: |
+          docker tag auth-service \
+            ap-chuncheon-1.ocir.io/axuvlb6gzvbg/diary/app:auth-latest
+
+      - name: Push image
+        run: |
+          docker push ap-chuncheon-1.ocir.io/axuvlb6gzvbg/diary/app:auth-latest
